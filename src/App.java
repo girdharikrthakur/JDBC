@@ -6,13 +6,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-//pojo class for database
+//POJO class for database columns
 
 class Employee {
     private String name;
     private String phone;
     private String email;
     private String password;
+
+    // Getter and Setters
 
     public void setName(String name) {
         this.name = name;
@@ -54,7 +56,6 @@ public class App {
 
         String tableName = "employee";
         String createTable = "create table employee(id int primary key, name varchar(255), phone varchar(20), email varchar(255), password varchar(20))";
-
         String query = "select * from employee;";
         String insertBase = "insert into employee(id,name,phone,email,password) values(%d, '%s', '%s', '%s', '%s')";
 
@@ -63,11 +64,18 @@ public class App {
         Connection connection = null;
         Statement stmt = null;
         Scanner scn = null;
+        final String url = "jdbc:mysql://localhost:3306/hibernate";
+        final String user = "root";
+        final String password = "admin";
 
         try {
+
             // Set up the database connection
+
             Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/hibernate", "root", "admin");
+
+            connection = DriverManager.getConnection(url, user, password);
+
             stmt = connection.createStatement();
             DatabaseMetaData dbMetaData = connection.getMetaData();
 
@@ -79,6 +87,7 @@ public class App {
                 stmt.execute(createTable);
                 System.out.println("Table " + tableName + " does not exist in the database.");
             }
+
             // Insert data into the table from user input;
             scn = new Scanner(System.in);
             System.out.println("Enter your name:");
@@ -89,6 +98,7 @@ public class App {
             employee.setEmail(scn.nextLine());
             System.out.println("Enter your password:");
             employee.setPassword(scn.nextLine());
+
             // Find a unique ID
             int uniqueId = getUniqueId(stmt, startId);
 
@@ -127,6 +137,7 @@ public class App {
 
     // Function to get a unique ID by checking existing IDs and incrementing until
     // found
+
     private static int getUniqueId(Statement stmt, int startId) throws SQLException {
         int idToCheck = startId;
 
@@ -147,5 +158,3 @@ public class App {
         }
     }
 }
-
-

@@ -1,11 +1,14 @@
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Scanner;
 
 public class App {
 
     public static void main(String[] args) {
-        String tableName = "employee";
-        String createTable = "CREATE TABLE employee (id INT PRIMARY KEY, name VARCHAR(255), phone VARCHAR(20), email VARCHAR(255), password VARCHAR(20))";
+
         String query = "SELECT * FROM employee";
         String insertBase = "INSERT INTO employee (id, name, phone, email, password) VALUES (%d, '%s', '%s', '%s', '%s')";
 
@@ -19,16 +22,6 @@ public class App {
 
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            // Check if the table exists
-            DatabaseMetaData dbMetaData = connection.getMetaData();
-            ResultSet tables = dbMetaData.getTables(null, null, tableName, null);
-            if (!tables.next()) {
-                stmt.execute(createTable);
-                System.out.println("Table '" + tableName + "' was created.");
-            } else {
-                System.out.println("Table '" + tableName + "' already exists.");
-            }
-
             while (true) {
                 System.out.println("\nEnter your Option:");
                 System.out.println("1 - Insert Data");
@@ -37,7 +30,7 @@ public class App {
                 System.out.print("Enter choice: ");
 
                 int option = scn.nextInt();
-                scn.nextLine(); // Consume newline
+                scn.nextLine();
 
                 switch (option) {
                     case 1:
@@ -84,14 +77,17 @@ public class App {
         }
     }
 
-    private static int getUniqueId(Statement stmt, int startId) throws SQLException {
+    private static int getUniqueId(Statement stmt, int startId) {
         int idToCheck = startId;
         while (true) {
             String checkIdQuery = "SELECT COUNT(*) FROM employee WHERE id = " + idToCheck;
-            ResultSet rs = stmt.executeQuery(checkIdQuery);
-            rs.next();
-            if (rs.getInt(1) == 0) {
-                return idToCheck;
+            try (ResultSet rs = stmt.executeQuery(checkIdQuery)) {
+                rs.next();
+                if (rs.getInt(1) == 0) {
+                    return idToCheck;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
             idToCheck++;
         }
